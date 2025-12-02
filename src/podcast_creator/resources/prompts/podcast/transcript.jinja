@@ -20,13 +20,17 @@ The user has provided content to be used as the context for this podcast episode
 {% endif %}
 </context>
 
-The podcast features the following speakers:
+The podcast features ONLY the following {{ speakers|length }} speakers (NO OTHER SPEAKERS ALLOWED):
 <speakers>
 {% for speaker in speakers %}
 - **{{ speaker.name }}**: {{ speaker.backstory }}
   Personality: {{ speaker.personality }}
 {% endfor %}
 </speakers>
+
+⚠️ CRITICAL CONSTRAINT: You may ONLY use these exact speaker names: {{ speaker_names|join(', ') }}.
+Do NOT use any other names like "Expert", "Guest", "Host", "Interviewer", etc.
+If the content mentions experts or guests, one of the above speakers must play that role.
 
 Next, examine the outline produced by our director:
 <outline>
@@ -85,7 +89,7 @@ Guidelines for creating the transcript:
    - Match each speaker's dialogue to their personality and expertise.
    - Choose speakers strategically based on who would naturally contribute to each topic.
    - This is a whole podcast so no need to reintroduce speakers or topics on each segment. Segments are just markers for us to know to change the topics, nothing else. 
-   - IMPORTANT: Only use the provided speaker names: {{ speaker_names|join(', ') }}
+   - ⚠️ CRITICAL: ONLY use these exact speaker names: {{ speaker_names|join(', ') }}. Using ANY other name will cause an error.
 
 When you're ready, provide the transcript. 
 Remember, you are creating a realistic podcast conversation based on the given information. 
