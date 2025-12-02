@@ -411,8 +411,8 @@ class ProfileManager:
         if "num_segments" in profile_data:
             try:
                 num_segments = int(profile_data["num_segments"])
-                if num_segments < 1 or num_segments > 10:
-                    errors.append("Number of segments must be between 1 and 10")
+                if num_segments < 1 or num_segments > 30:
+                    errors.append("Number of segments must be between 1 and 30")
             except (ValueError, TypeError):
                 errors.append("Number of segments must be a valid integer")
         

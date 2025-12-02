@@ -8,8 +8,10 @@ from loguru import logger
 from moviepy import AudioFileClip, concatenate_audioclips
 from pydantic import BaseModel, Field, field_validator
 
-# Compile regex pattern once for better performance
+# Compile regex patterns once for better performance
 THINK_PATTERN = re.compile(r"<think>(.*?)</think>", re.DOTALL)
+# Pattern to match markdown code blocks (```json ... ``` or ``` ... ```)
+MARKDOWN_CODE_BLOCK_PATTERN = re.compile(r"^```(?:json)?\s*\n?(.*?)\n?```$", re.DOTALL)
 
 
 def parse_thinking_content(content: str) -> Tuple[str, str]:
@@ -58,25 +60,66 @@ def parse_thinking_content(content: str) -> Tuple[str, str]:
     return thinking_content, cleaned_content
 
 
+def clean_markdown_code_blocks(content: str) -> str:
+    """
+    Remove markdown code block wrappers from content.
+
+    Some AI models wrap JSON output in markdown code blocks like:
+    ```json
+    {"key": "value"}
+    ```
+
+    This function extracts the content from within those blocks.
+
+    Args:
+        content (str): The original content potentially wrapped in code blocks
+
+    Returns:
+        str: Content with markdown code block wrappers removed
+
+    Example:
+        >>> content = '```json\\n{"key": "value"}\\n```'
+        >>> clean_markdown_code_blocks(content)
+        '{"key": "value"}'
+    """
+    if not isinstance(content, str):
+        return str(content) if content is not None else ""
+
+    content = content.strip()
+
+    # Check if the content is wrapped in markdown code blocks
+    match = MARKDOWN_CODE_BLOCK_PATTERN.match(content)
+    if match:
+        return match.group(1).strip()
+
+    return content
+
+
 def clean_thinking_content(content: str) -> str:
     """
-    Remove thinking content from AI responses, returning only the cleaned content.
+    Remove thinking content and markdown code blocks from AI responses.
 
     This is a convenience function for cases where you only need the cleaned
     content and don't need access to the thinking process.
 
     Args:
         content (str): The original message content with potential <think> tags
+                       or markdown code blocks
 
     Returns:
-        str: Content with <think> blocks removed and whitespace cleaned
+        str: Content with <think> blocks and markdown wrappers removed
 
     Example:
         >>> content = "<think>Let me think...</think>Here's the answer"
         >>> clean_thinking_content(content)
         "Here's the answer"
+        >>> content = '```json\\n{"key": "value"}\\n```'
+        >>> clean_thinking_content(content)
+        '{"key": "value"}'
     """
     _, cleaned_content = parse_thinking_content(content)
+    # Also clean markdown code blocks that some models add
+    cleaned_content = clean_markdown_code_blocks(cleaned_content)
     return cleaned_content
 
 

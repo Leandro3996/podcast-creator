@@ -10,6 +10,7 @@ from .core import (
     Outline,
     Segment,
     Transcript,
+    clean_markdown_code_blocks,
     clean_thinking_content,
     combine_audio_files,
     parse_thinking_content,
@@ -39,6 +40,7 @@ __all__ = [
     "combine_audio_files",
     "parse_thinking_content",
     "clean_thinking_content",
+    "clean_markdown_code_blocks",
     # Data models
     "Segment",
     "Outline",

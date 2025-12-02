@@ -772,7 +772,7 @@ def show_episode_profiles_page():
                     key="new_episode_transcript_model"
                 )
             
-            num_segments = st.slider("Number of Segments:", 1, 10, 4, key="new_episode_segments")
+            num_segments = st.slider("Number of Segments:", 1, 30, 4, key="new_episode_segments")
             default_briefing = st.text_area(
                 "Default Briefing:", 
                 value="Create an engaging discussion about the topic",
