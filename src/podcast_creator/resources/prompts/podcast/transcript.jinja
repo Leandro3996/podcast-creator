@@ -80,6 +80,8 @@ Formatting instructions:
 
 Guidelines for creating the transcript:
    - Do not return ```json in your response. Return purely the array of dicts in Json compatible format
+   - ⚠️ IMPORTANT JSON FORMATTING: Do NOT escape underscores or other special characters with backslashes.
+     Write text naturally (e.g., "l10n_ar" NOT "l10n\_ar"). Invalid escape sequences will cause parsing errors.
    - Ensure the conversation flows naturally and covers all points in the outline.
    - Ensure you return the root "transcript" key in your response.
    - Make the dialogue sound conversational and engaging.
