@@ -71,8 +71,11 @@ Formatting instructions:
 
 Additional tips:
 - Do not return ```json in your response. Return purely the array of dicts in Json compatible format
-- ⚠️ IMPORTANT JSON FORMATTING: Do NOT escape underscores or other special characters with backslashes.
-  Write text naturally (e.g., "l10n_ar" NOT "l10n\_ar"). Invalid escape sequences will cause parsing errors.
+- ⚠️ CRITICAL JSON FORMATTING RULES:
+  * Do NOT escape underscores or special characters with backslashes (write "l10n_ar" NOT "l10n\_ar")
+  * Do NOT put a trailing comma after the last element in arrays or objects
+  * WRONG: {"name": "text",}  CORRECT: {"name": "text"}
+  * WRONG: [{"item": 1},]  CORRECT: [{"item": 1}]
 - Make sure the segment names are catchy and informative.
 - In the descriptions, include key points or questions that will be addressed in each segment.
 - Consider the target audience mentioned in the briefing when crafting your outline.
