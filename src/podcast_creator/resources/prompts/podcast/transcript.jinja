@@ -83,8 +83,9 @@ Guidelines for creating the transcript:
    - ⚠️ CRITICAL JSON FORMATTING RULES:
      * Do NOT escape underscores or special characters with backslashes (write "l10n_ar" NOT "l10n\_ar")
      * Do NOT put a trailing comma after the last element in arrays or objects
+     * Do NOT use curly/typographic quotes (" ") inside strings - use single quotes (') or escape properly
+     * WRONG: "called "tokens" here"  CORRECT: "called 'tokens' here"
      * WRONG: {"dialogue": "text",}  CORRECT: {"dialogue": "text"}
-     * WRONG: [{"item": 1},]  CORRECT: [{"item": 1}]
    - Ensure the conversation flows naturally and covers all points in the outline.
    - Ensure you return the root "transcript" key in your response.
    - Make the dialogue sound conversational and engaging.
