@@ -12,6 +12,8 @@ from pydantic import BaseModel, Field, field_validator
 THINK_PATTERN = re.compile(r"<think>(.*?)</think>", re.DOTALL)
 # Pattern to match markdown code blocks (```json ... ``` or ``` ... ```)
 MARKDOWN_CODE_BLOCK_PATTERN = re.compile(r"^```(?:json)?\s*\n?(.*?)\n?```$", re.DOTALL)
+# Pattern to match trailing commas before ] or }
+TRAILING_COMMA_PATTERN = re.compile(r",\s*([}\]])")
 
 
 def parse_thinking_content(content: str) -> Tuple[str, str]:
@@ -95,6 +97,51 @@ def clean_markdown_code_blocks(content: str) -> str:
     return content
 
 
+def sanitize_json_string(content: str) -> str:
+    """
+    Sanitize common JSON formatting issues produced by LLMs.
+
+    Fixes:
+    - Curly/typographic quotes (" ") replaced with straight quotes (")
+    - Trailing commas before ] or }
+    - Invalid escape sequences like \\_
+
+    Args:
+        content (str): Raw JSON string from LLM
+
+    Returns:
+        str: Sanitized JSON string ready for parsing
+
+    Example:
+        >>> content = '{"key": "value with "quotes"",}'
+        >>> sanitize_json_string(content)
+        '{"key": "value with \\'quotes\\'"}'
+    """
+    if not isinstance(content, str):
+        return str(content) if content is not None else ""
+
+    # Replace curly/typographic quotes with straight quotes
+    # Opening quotes
+    content = content.replace(""", '"')
+    content = content.replace("„", '"')
+    content = content.replace("«", '"')
+    # Closing quotes
+    content = content.replace(""", '"')
+    content = content.replace("»", '"')
+    # Single curly quotes
+    content = content.replace("'", "'")
+    content = content.replace("'", "'")
+
+    # Fix invalid escape sequences (e.g., \_ which is not valid in JSON)
+    content = content.replace("\\_", "_")
+    content = content.replace("\\*", "*")
+
+    # Remove trailing commas before } or ]
+    content = TRAILING_COMMA_PATTERN.sub(r"\1", content)
+
+    return content
+
+
 def clean_thinking_content(content: str) -> str:
     """
     Remove thinking content and markdown code blocks from AI responses.
@@ -120,6 +167,8 @@ def clean_thinking_content(content: str) -> str:
     _, cleaned_content = parse_thinking_content(content)
     # Also clean markdown code blocks that some models add
     cleaned_content = clean_markdown_code_blocks(cleaned_content)
+    # Sanitize JSON formatting issues from LLMs
+    cleaned_content = sanitize_json_string(cleaned_content)
     return cleaned_content
 
 
