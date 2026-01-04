@@ -52,6 +52,14 @@ async def generate_outline_node(state: PodcastState, config: RunnableConfig) -> 
 
     logger.info(f"Generated outline with {len(outline_result.segments)} segments")
 
+    # Save outline immediately for checkpoint/recovery
+    if state.get("output_dir"):
+        output_dir = Path(state["output_dir"])
+        output_dir.mkdir(parents=True, exist_ok=True)
+        outline_path = output_dir / "outline.json"
+        outline_path.write_text(outline_result.model_dump_json(indent=2))
+        logger.info(f"Outline saved immediately to: {outline_path}")
+
     return {"outline": outline_result}
 
 
@@ -112,6 +120,15 @@ async def generate_transcript_node(state: PodcastState, config: RunnableConfig) 
         transcript.extend(result.transcript)
 
     logger.info(f"Generated transcript with {len(transcript)} dialogue segments")
+
+    # Save transcript immediately for checkpoint/recovery
+    if state.get("output_dir"):
+        import json
+        output_dir = Path(state["output_dir"])
+        output_dir.mkdir(parents=True, exist_ok=True)
+        transcript_path = output_dir / "transcript.json"
+        transcript_path.write_text(json.dumps([d.model_dump() for d in transcript], indent=2))
+        logger.info(f"Transcript saved immediately to: {transcript_path}")
 
     return {"transcript": transcript}
 
@@ -240,5 +257,4 @@ async def combine_audio_node(state: PodcastState, config: RunnableConfig) -> Dic
     final_path = Path(result["combined_audio_path"])
     logger.info(f"Combined audio saved to: {final_path}")
 
-    return {"final_output_file_path": final_path}
     return {"final_output_file_path": final_path}
