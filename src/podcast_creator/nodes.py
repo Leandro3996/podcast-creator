@@ -211,7 +211,7 @@ async def generate_all_audio_node(state: PodcastState, config: RunnableConfig) -
 
 
 async def generate_single_audio_clip(dialogue_info: Dict) -> Path:
-    """Generate a single audio clip"""
+    """Generate a single audio clip with automatic retry on failure"""
     dialogue = dialogue_info["dialogue"]
     index = dialogue_info["index"]
     output_dir = dialogue_info["output_dir"]
@@ -232,14 +232,29 @@ async def generate_single_audio_clip(dialogue_info: Dict) -> Path:
     # Create TTS model
     tts_model = AIFactory.create_text_to_speech(tts_provider, tts_model_name)
 
-    # Generate audio
-    await tts_model.agenerate_speech(
-        text=dialogue.dialogue, voice=voices[dialogue.speaker], output_file=clip_path
-    )
+    # Generate audio with retry logic
+    max_retries = 3
+    base_wait_time = 30  # seconds
 
-    logger.info(f"Generated audio clip: {clip_path}")
+    for attempt in range(max_retries):
+        try:
+            await tts_model.agenerate_speech(
+                text=dialogue.dialogue, voice=voices[dialogue.speaker], output_file=clip_path
+            )
+            logger.info(f"Generated audio clip: {clip_path}")
+            return clip_path
 
-    return clip_path
+        except Exception as e:
+            if attempt < max_retries - 1:
+                wait_time = base_wait_time * (2 ** attempt)  # 30s, 60s, 120s
+                logger.warning(
+                    f"TTS failed for clip {index:04d}, attempt {attempt + 1}/{max_retries}. "
+                    f"Retrying in {wait_time}s. Error: {e}"
+                )
+                await asyncio.sleep(wait_time)
+            else:
+                logger.error(f"TTS failed for clip {index:04d} after {max_retries} attempts: {e}")
+                raise
 
 
 async def combine_audio_node(state: PodcastState, config: RunnableConfig) -> Dict:
